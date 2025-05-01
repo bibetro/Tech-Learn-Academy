@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -24,19 +24,36 @@ const userMenuItems = [
 
 export default function DashboardLayout({ children }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const pathname = usePathname();
   const isAdmin = pathname.includes('/admin');
   const menuItems = isAdmin ? adminMenuItems : userMenuItems;
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (e.clientX <= 10) {
+        setIsHovered(true);
+        setIsCollapsed(false);
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-dark-100 relative overflow-hidden">
       {/* Sidebar */}
       <motion.aside
         initial={false}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          setIsCollapsed(true);
+        }}
         animate={{
           width: isCollapsed ? '60px' : '250px',
-          x: isCollapsed ? '-100%' : '0',
-          opacity: isCollapsed ? 0 : 1
+          x: '0',
+          opacity: 1
         }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
         className="fixed left-0 top-0 h-screen bg-dark-200 shadow-lg z-20 md:relative md:translate-x-0 md:opacity-100"
